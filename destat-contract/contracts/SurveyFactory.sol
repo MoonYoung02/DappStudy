@@ -13,8 +13,8 @@ struct SurveyShcema {
 event SurveyCreated(address);
 
 contract SurveyFactory {
-    uint256 min_pool_amount;
-    uint256 min_reward_amount;
+    uint256 public min_pool_amount;
+    uint256 public min_reward_amount;
     Survey[] surveys; 
     //ex pool amount: 50eth, target respondents number: 100, reward: 50 eth / 100 = 0.5eth
 
@@ -25,7 +25,7 @@ contract SurveyFactory {
 
     function createSurvey(SurveyShcema calldata _survey) external payable{
         require(msg.value >= min_pool_amount, "Insufficient pool amount");
-        require(msg.value / _survey.targetNumber >= min_reward_amount, "Insufficeint reward amount");
+        require(msg.value / _survey.targetNumber >= min_reward_amount, "Insufficient reward amount");
         Survey survey =  new Survey{value: msg.value}(_survey.title, _survey.description, _survey.questions, _survey.targetNumber);    
         surveys.push(survey);
         emit SurveyCreated(address(survey));
