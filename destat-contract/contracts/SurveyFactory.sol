@@ -26,7 +26,7 @@ contract SurveyFactory {
     function createSurvey(SurveyShcema calldata _survey) external payable{
         require(msg.value >= min_pool_amount, "Insufficient pool amount");
         require(msg.value / _survey.targetNumber >= min_reward_amount, "Insufficient reward amount");
-        Survey survey =  new Survey{value: msg.value}(_survey.title, _survey.description, _survey.questions, _survey.targetNumber);    
+        Survey survey =  new Survey{value: msg.value}(_survey.title, _survey.description,  _survey.targetNumber, _survey.questions);    
         surveys.push(survey);
         emit SurveyCreated(address(survey));
     }
