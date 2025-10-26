@@ -72,12 +72,12 @@ it("Survey Storage Layout", async ()=> {
     const nextHash = (hex:string, i: number) => 
         "0x" + (BigInt(hex) + BigInt(i)).toString(16);
 
-    console.log("------primitive types------\n");
-    console.log(decodeUni(slot0Data));// title 
-    console.log(slot2Data); // targetNumber
-    console.log(slot3Data); // rewardAmount 
+    //console.log("------primitive types------\n");
+    //console.log(decodeUni(slot0Data));// title 
+    //console.log(slot2Data); // targetNumber
+    //console.log(slot3Data); // rewardAmount 
 
-    console.log("-----long string types-----\n");
+    //console.log("-----long string types-----\n");
     // 0x103 == 259 
     // pDesc = hash256(pSlot1), getStorage(pDesc)
     const pDesc = keccak256(ethers.toBeHex(1, 32));
@@ -103,29 +103,29 @@ it("Survey Storage Layout", async ()=> {
         nextHash(pDesc, 4),
     );
 
-    console.log(desc0);
-    console.log(desc1);
-    console.log(desc2);
-    console.log(desc3);
-    console.log(desc4);
+    //console.log(desc0);
+    //console.log(desc1);
+    //console.log(desc2);
+    //console.log(desc3);
+    //console.log(desc4);
 
     // Array type
-    console.log("-----Array & Structure type-----\n");
-    console.log("slot4Data", slot4Data)
+    //console.log("-----Array & Structure type-----\n");
+    //console.log("slot4Data", slot4Data)
     const pQuestions = keccak256(ethers.toBeHex(4, 32));
     const question1 = await ethers.provider.getStorage(survey.getAddress(), nextHash(pQuestions, 0));
     const question1_option_array = await ethers.provider.getStorage(survey.getAddress(), nextHash(pQuestions, 1));
     const question2 = await ethers.provider.getStorage(survey.getAddress(), nextHash(pQuestions, 2));
     const question2_option_array = await ethers.provider.getStorage(survey.getAddress(), nextHash(pQuestions, 3));
-    console.log("question1", question1);
-    console.log("question1_option_array", question1_option_array);
-    console.log("question2", question2, decodeUni(question2));
-    console.log("question2_option_array", question2_option_array);
+    //console.log("question1", question1);
+    //console.log("question1_option_array", question1_option_array);
+    //console.log("question2", question2, decodeUni(question2));
+    //console.log("question2_option_array", question2_option_array);
 
     // map 
     // map[keccak256 , slot address]
-    console.log("------map------\n");
-    console.log(slot6Data);
+    //console.log("------map------\n");
+    //console.log(slot6Data);
     const addr = "0x8626f6940e2eb28930efb4cef49b2d1f2c9c1199";
     const mapKeyaddr = keccak256(
         ethers.toBeHex(addr, 32) + ethers.toBeHex(6, 32).slice(2),
@@ -134,5 +134,5 @@ it("Survey Storage Layout", async ()=> {
         survey.getAddress(), 
         mapKeyaddr,
     );
-    console.log(map1Value);
+    //console.log(map1Value);
 });
