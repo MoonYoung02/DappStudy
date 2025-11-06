@@ -78,7 +78,7 @@ export default function Navigation() {
                   </li>
                   <li>
                     <NavigationMenuLink asChild>
-                      <Link to="/">
+                      <Link to="/survey/create">
                         <div className="text-sm leading-none font-medium">
                           Create survey
                         </div>
