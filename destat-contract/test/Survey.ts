@@ -1,14 +1,14 @@
-import {expect} from "chai"
+import { expect } from "chai"
 import { ECDH } from "crypto";
 import { keccak256 } from "ethers";
-import {network} from "hardhat"
+import { network } from "hardhat"
 
 interface Question {
     question: string;
     options: string[];
 }
 
-it("Survey Storage Layout", async ()=> {
+it("Survey Storage Layout", async () => {
     const { ethers } = await network.connect();
     const title = "막무가내 설문조사";
     const description = "중앙화된 설문조사로서, 모든 데이터는 공개되지 않으며 설문조사를 계시한자만 볼 수 있습니다.";
@@ -23,18 +23,18 @@ it("Survey Storage Layout", async ()=> {
         },
         {
             question: "test2",
-            options: ["구글폼 운영자"], 
+            options: ["구글폼 운영자"],
         },
     ];
     const survey = await ethers.deployContract(
         "Survey",
-        [ title,
-        description,
-        100,
-        questions
+        [title,
+            description,
+            100,
+            questions
         ], {
-            value: ethers.parseEther("100")
-        }
+        value: ethers.parseEther("100")
+    }
     );
 
     // Survey storage 
@@ -68,8 +68,8 @@ it("Survey Storage Layout", async ()=> {
     );
     const decodeUni = (hex: string) => Buffer.from(hex.slice(2), "hex").toString("utf-8");
     // 만약 한 슬롯안에 저장할 수 있는 길이(32byte)라면, 한 슬롯으로 문자열이 저장되고 그렇지 않으면 별도의 참조 값이 저장된다.
-    
-    const nextHash = (hex:string, i: number) => 
+
+    const nextHash = (hex: string, i: number) =>
         "0x" + (BigInt(hex) + BigInt(i)).toString(16);
 
     //console.log("------primitive types------\n");
@@ -131,7 +131,7 @@ it("Survey Storage Layout", async ()=> {
         ethers.toBeHex(addr, 32) + ethers.toBeHex(6, 32).slice(2),
     );
     const map1Value = await ethers.provider.getStorage(
-        survey.getAddress(), 
+        survey.getAddress(),
         mapKeyaddr,
     );
     //console.log(map1Value);

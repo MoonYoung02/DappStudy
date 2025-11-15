@@ -12,6 +12,7 @@ import {
 } from "~/components/ui/navigation-menu";
 import { Button } from "./button";
 import { rabbykit } from "~/root";
+import WalletButton from "../wallet-button";
 // - navigation
 //      - Dashboard
 //      - Survey
@@ -175,13 +176,7 @@ export default function Navigation() {
             </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
-        <Button
-          onClick={() => {
-            rabbykit.open();
-          }}
-        >
-          Connect
-        </Button>
+        <WalletButton></WalletButton>
       </div>
     </nav>
   );
