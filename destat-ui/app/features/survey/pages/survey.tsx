@@ -12,6 +12,9 @@ import {
 } from "~/components/ui/card";
 import MessageBubble from "../components/message-bubble";
 import { Input } from "~/components/ui/input";
+import { useEffect, useState } from "react";
+import { useAccount, useReadContract, useWriteContract } from "wagmi";
+import { SURVEY_ABI } from "../constant";
 
 export const action = async ({ request }: Route.ActionArgs) => {
   const formData = await request.formData();
@@ -76,21 +79,102 @@ const questions: questions[] = [
     options: ["*", "&", "#", "%"],
   },
 ];
-export default function Survey() {
+export default function Survey({ params }: Route.ComponentProps) {
+  const { data: questions } = useReadContract({
+    address: params.surveyId as `0x{string}`,
+    abi: SURVEY_ABI,
+    functionName: "getQuestions",
+    args: [],
+  });
+  const { data: title } = useReadContract({
+    address: params.surveyId as `0x{string}`,
+    abi: SURVEY_ABI,
+    functionName: "title",
+    args: [],
+  });
+  const { data: description } = useReadContract({
+    address: params.surveyId as `0x{string}`,
+    abi: SURVEY_ABI,
+    functionName: "description",
+    args: [],
+  });
+  const { data: answers } = useReadContract({
+    address: params.surveyId as `0x{string}`,
+    abi: SURVEY_ABI,
+    functionName: "getAnswers",
+    args: [],
+  });
+  const { data: target } = useReadContract({
+    address: params.surveyId as `0x{string}`,
+    abi: SURVEY_ABI,
+    functionName: "targetNumber",
+    args: [],
+  });
+  const { writeContract } = useWriteContract();
+  const { address } = useAccount();
+
+  const [count, setCounts] = useState<Number[][]>([]);
+  const [isAnswered, setIsAnswered] = useState(false);
+
+  const countAnwsers = () => {
+    if (!target) return;
+    return questions?.map((q, i) => {
+      const count = Array.from({ length: q.options.length }).fill(
+        0
+      ) as number[];
+      answers?.map((answer) => count[answer.answers[i]]++);
+      return count.map((n) => (n / Number(target)) * 100);
+    });
+  };
+
+  useEffect(() => {
+    if (!answers || !questions || !address) {
+      return;
+    }
+    for (const answer of answers) {
+      if (answer.respondent === address) {
+        setCounts(countAnwsers() || []);
+        setIsAnswered(true);
+        return;
+      }
+    }
+  }, [answers, address, target]);
+
+  const submitAnswer = (e: Reat.FormEvent<HTMLFormElement>) => {
+    if (!address) {
+      alert("Please connect wallet before submiting answer");
+      return;
+    }
+    const formData = new FormData(e.currentTarget);
+    const answers: number[] = [];
+    for (const value of formData.values()) {
+      answers.push(Number(value));
+    }
+    writeContract({
+      address: params.surveyId as `0x{string}`,
+      abi: SURVEY_ABI,
+      functionName: "submitAnswer",
+      args: [
+        {
+          respondent: address,
+          answers,
+        },
+      ],
+    });
+  };
+
   return (
     <div className="grid grid-cols-3">
       <Card className="col-span-2 w-screen gap-3">
         <CardHeader className="font-extrabold text-3xl">
-          <CardTitle>Sample Survey</CardTitle>
-          <CardDescription>
-            This is a smaple survey. Let's join to get Rewards
-          </CardDescription>
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
         </CardHeader>
-        {false ? (
+        {isAnswered ? (
           <CardContent className="overflow-y-auto h-[70vh]">
             <h1 className="font-semibold text-xl pb-4">Survey Progress</h1>
             <div className="gap-5 grid grid-cols-2">
-              {questions.map((q, i) => (
+              {questions?.map((q, i) => (
                 <div className="flex flex-col ">
                   <h1 className="font-bold">{q.question}</h1>
                   <div className="flex flex-col pl-2 gap-1">
@@ -111,8 +195,8 @@ export default function Survey() {
           </CardContent>
         ) : (
           <CardContent>
-            <Form method="post" className="grid grid-cols-2">
-              {questions.map((q, i) => (
+            <Form onSubmit={submitAnswer} className="grid grid-cols-2">
+              {questions?.map((q, i) => (
                 <div className="flex flex-col">
                   <span className="mt-5 mb-1">{q.question}</span>
                   {q.options.map((o, j) => (
