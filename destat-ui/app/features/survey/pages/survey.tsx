@@ -183,8 +183,11 @@ export default function Survey({ params }: Route.ComponentProps) {
                         <div className="left-2 absolute text-xs font-semibold">
                           {o}
                         </div>
-                        <div className="w-full bg-gray-200 h-5 rounded-full">
-                          <div className="bg-blue-400 w-7 h-5 rounded-full"></div>
+                        <div className="w-full bg-gray-200 h-5 rounded-full overflow-hidden">
+                          <div
+                            className="bg-blue-400 w-7 h-5 rounded-full"
+                            style={{ width: `${count[i][j]}%` }}
+                          ></div>
                         </div>
                       </div>
                     ))}

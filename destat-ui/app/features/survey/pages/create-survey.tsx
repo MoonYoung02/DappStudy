@@ -1,6 +1,10 @@
-import { useState, type FormEvent } from "react";
-import { Form } from "react-router";
-import { useWriteContract } from "wagmi";
+import { useEffect, useState, type FormEvent } from "react";
+import { Form, Route } from "react-router";
+import {
+  useAccount,
+  useWaitForTransactionReceipt,
+  useWriteContract,
+} from "wagmi";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -11,18 +15,75 @@ import {
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { SURVEY_FACTORY, SURVEY_FACTORY_ABI } from "../constant";
-import { parseEther } from "viem";
+import { decodeEventLog, parseEther } from "viem";
+import { call } from "viem/actions";
+import { supabase } from "~/postgress/supaclient";
 
-// export const action = async ({ request }: Route.ActionArgs) => {
-//   const formData = await request.formData();
-//   console.log(formData);
-// };
+export const action = async ({ request }: Route.ActionArgs) => {
+  const formData = await request.formData();
+  const metadata = JSON.parse(formData.get("meatadata") as string);
+  const imageFile = formData.get("image") as File;
+  const { data, error } = await supabase.storage
+    .from("images")
+    .upload(metadata.id, imageFile);
+  if (!error) {
+    const publicUrl = await supabase.storage
+      .from("images")
+      .getPublicUrl(data.path);
+    const { data: survey, error } = await supabase.from("survey").insert({
+      id: metadata.id,
+      title: metadata.title,
+      description: metadata.description,
+      target_number: metadata.targetNumber,
+      reward_amount: metadata.rewardAmount,
+      image: publicUrl.data.publicUrl,
+      questions: metadata.questions,
+      owner: metadata.owner,
+    });
+    console.log(error);
+  }
+};
 
 // useState[2, 3, 2] 0번 질문은 옵션이 2개, 1번은 3개 ..
-export default function () {
+export default function CreateSurvey() {
   const [options, setOptions] = useState([1]);
   const [image, setImage] = useState("");
-  const { writeContract } = useWriteContract();
+  const [formImage, setFormImage] = useState<File>();
+  const { data: hash, writeContract } = useWriteContract();
+  const { data: receipt, isFetched } = useWaitForTransactionReceipt({
+    hash,
+  });
+  const [surveyMeta, setSurveyMeta] = useState({});
+  const { address } = useAccount();
+
+  useEffect(() => {
+    if (!isFetched || !receipt || !formImage) return;
+    const callAction = async () => {
+      let contractAddress;
+      for (const log of receipt?.logs) {
+        const event = decodeEventLog({
+          abi: SURVEY_FACTORY_ABI,
+          data: log.data,
+          topics: log.topics,
+        });
+        if (event.eventName === "SurveyCreated") {
+          contractAddress = event.args[0];
+        }
+      }
+      const formData = new FormData();
+      const newSurveyMeta = {
+        ...surveyMeta,
+        id: contractAddress,
+      };
+      formData.append("metadata", JSON.stringify(surveyMeta));
+      formData.append("image", formImage);
+      await fetch("/survey/create", {
+        method: "post",
+        body: formData,
+      });
+    };
+    callAction();
+  }, [receipt]);
 
   const uploadFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -58,6 +119,7 @@ export default function () {
     options: string[];
   }
   const createSurvey = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const questionsData = formData.getAll("q") as string[];
     const questions = questionsData.map((q, i) => {
@@ -72,6 +134,9 @@ export default function () {
     const description = formData.get("description") as string;
     const targetNumber = formData.get("target") as string;
     const poolSize = formData.get("pool") as string;
+    const formImg = formData.get("image") as File;
+    setFormImage(formImg);
+
     writeContract({
       address: SURVEY_FACTORY,
       abi: SURVEY_FACTORY_ABI,
@@ -86,6 +151,14 @@ export default function () {
       ],
       value: parseEther(poolSize),
     });
+    setSurveyMeta({
+      title,
+      description,
+      targetNumber,
+      rewardAmount: Number(poolSize) / Number(targetNumber),
+      questions,
+      owner: address,
+    });
   };
 
   return (
@@ -98,7 +171,11 @@ export default function () {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Form onSubmit={(e) => createSurvey(e)} encType="multipart/form-data">
+          <Form
+            method="post"
+            onSubmit={(e) => createSurvey(e)}
+            encType="multipart/form-data"
+          >
             <label className="flex flex-col mb-4">
               <h1 className="font-bold">Title</h1>
               <Input type="text" name="title" />
@@ -119,11 +196,11 @@ export default function () {
             </label>
             <h1 className="font-bold mb-2">Questions</h1>
             {options.map((n, i) => (
-              <div className="mb-4">
+              <div className="mb-4" key={i}>
                 <Input type="text" placeholder="Question" name="q" />
                 <div>
                   {Array.from({ length: n }).map((_, j) => (
-                    <div className="flex items-center">
+                    <div className="flex items-center" key={j}>
                       {j == n - 1 && j != 0 ? (
                         <Button
                           type="button"
