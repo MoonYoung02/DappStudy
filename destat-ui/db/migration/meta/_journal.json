@@ -15,6 +15,41 @@
       "when": 1764508193234,
       "tag": "0001_motionless_wind_dancer",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1764813629477,
+      "tag": "0002_bright_lockjaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1764814536984,
+      "tag": "0003_clammy_loners",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1764820643403,
+      "tag": "0004_tan_captain_universe",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1764820920871,
+      "tag": "0005_numerous_karma",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1764823073800,
+      "tag": "0006_swift_dagger",
+      "breakpoints": true
     }
   ]
 }

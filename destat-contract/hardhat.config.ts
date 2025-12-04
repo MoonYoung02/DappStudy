@@ -32,11 +32,11 @@ const config: HardhatUserConfig = {
       type: "edr-simulated",
       chainType: "op",
     },
-    sepolia: {
+    kairos: {
       type: "http",
       chainType: "l1",
-      url: configVariable("SEPOLIA_RPC_URL"),
-      accounts: [configVariable("SEPOLIA_PRIVATE_KEY")],
+      url:"https://public-en-kairos.node.kaia.io", 
+      accounts: ["0x8e34dc501a2bfb55aa01aea13041702af233496c4113aea360c05ca5e698eb5a"]
     },
   },
 };

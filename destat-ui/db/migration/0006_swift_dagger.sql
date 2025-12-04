@@ -1,0 +1,1 @@
+ALTER TABLE "daily_live_survey" RENAME COLUMN "create_at" TO "created_at";
