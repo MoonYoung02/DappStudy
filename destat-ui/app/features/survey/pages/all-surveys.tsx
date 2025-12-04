@@ -26,7 +26,7 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
         description: s.description!,
         view: s.view,
         count: s.count!,
-        imgae: s.image,
+        image: s.image,
         address: s.id!,
       };
     });
